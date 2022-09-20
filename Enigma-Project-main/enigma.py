@@ -44,8 +44,8 @@ UKW = {
 # }
 
 SETTINGS = {
-    "UKW": UKW["B"],
-    "WHEELS": [WHEELS["III"], WHEELS["II"], WHEELS["I"]],
+    "UKW": UKW["C"],
+    "WHEELS": [WHEELS["III"], WHEELS["I"], WHEELS["II"]],
     "WHEEL_POS": [0, 0, 0],
     "ETW": ETW,
     "PLUGBOARD": []
@@ -103,18 +103,31 @@ def pass_wheels(input, reverse=False):
     # Implement Wheel Logics
     # Keep in mind that reflected signals pass wheels in reverse order
     if (reverse == False):
-        input_num = ord(input) - ord('A')
-        input = SETTINGS["WHEELS"][2]["wire"][input_num +
-                                              SETTINGS["WHEEL_POS"][2]]
+        # right wheel
+        input_num = (ord(input) - ord('A') + SETTINGS["WHEEL_POS"][2]) % 26
+        input = SETTINGS["WHEELS"][2]["wire"][input_num]
 
-        input_num = ord(input) - ord('A') - SETTINGS["WHEEL_POS"][2]
-        input = SETTINGS["WHEELS"][1]["wire"][input_num +
-                                              SETTINGS["WHEEL_POS"][1]]
+        # middle wheel
+        input_num = (ord(input) - ord('A') -
+                     SETTINGS["WHEEL_POS"][2] + SETTINGS["WHEEL_POS"][1])
 
-        input_num = ord(input) - ord('A') - SETTINGS["WHEEL_POS"][1]
+        if (input_num < 0):
+            input_num += 26
+        else:
+            input_num %= 26
+        input = SETTINGS["WHEELS"][1]["wire"][input_num]
 
-        input = SETTINGS["WHEELS"][0]["wire"][input_num +
-                                              SETTINGS["WHEEL_POS"][0]]
+        # # left wheel
+        input_num = ord(input) - ord('A') - \
+            SETTINGS["WHEEL_POS"][1] + SETTINGS["WHEEL_POS"][0]
+
+        if (input_num < 0):
+            input_num += 26
+        else:
+            input_num %= 26
+
+        input = SETTINGS["WHEELS"][0]["wire"][input_num]
+
     else:
         # wheel section
         for index in range(3):
@@ -186,6 +199,6 @@ for ch in plaintext:
     encoded_ch = pass_wheels(encoded_ch)
     encoded_ch = pass_ukw(encoded_ch)
     encoded_ch = pass_wheels(encoded_ch, reverse=True)
-    # encoded_ch = pass_plugboard(encoded_ch)
+    encoded_ch = pass_plugboard(encoded_ch)
 
     print(encoded_ch, end='')
