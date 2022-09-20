@@ -46,9 +46,9 @@ UKW = {
 SETTINGS = {
     "UKW": UKW["C"],
     "WHEELS": [WHEELS["III"], WHEELS["I"], WHEELS["II"]],
-    "WHEEL_POS": [0, 0, 0],
+    "WHEEL_POS": [24, 1, 1],
     "ETW": ETW,
-    "PLUGBOARD": []
+    "PLUGBOARD": ["AV", "FT"]
 }
 
 
@@ -117,10 +117,9 @@ def pass_wheels(input, reverse=False):
             input_num %= 26
         input = SETTINGS["WHEELS"][1]["wire"][input_num]
 
-        # # left wheel
+        # # left wheel 15
         input_num = ord(input) - ord('A') - \
             SETTINGS["WHEEL_POS"][1] + SETTINGS["WHEEL_POS"][0]
-
         if (input_num < 0):
             input_num += 26
         else:
@@ -129,17 +128,42 @@ def pass_wheels(input, reverse=False):
         input = SETTINGS["WHEELS"][0]["wire"][input_num]
 
     else:
-        # wheel section
-        for index in range(3):
-            reverse_input_index = (
-                ord(input) - ord('A') + SETTINGS["WHEEL_POS"][index]) % 26
+        # left wheel
+        reverse_input_index = (
+            ord(input) - ord('A') + SETTINGS["WHEEL_POS"][0]) % 26
 
-            reverse_output_index = SETTINGS["WHEELS"][index]["wire"].find(
-                chr(reverse_input_index + ord('A')))
+        reverse_output_index = SETTINGS["WHEELS"][0]["wire"].find(
+            chr(reverse_input_index + ord('A')))
 
-            input = chr(reverse_output_index + ord('A'))
+        input = chr(reverse_output_index + ord('A'))
 
-        # ETW section
+        # # middle wheel
+        reverse_input_index = ord(
+            input) - ord('A') + SETTINGS["WHEEL_POS"][1] - SETTINGS["WHEEL_POS"][0]
+        if (reverse_input_index < 0):
+            reverse_input_index += 26
+        else:
+            reverse_input_index %= 26
+
+        reverse_output_index = SETTINGS["WHEELS"][1]["wire"].find(
+            chr(reverse_input_index + ord('A')))
+
+        input = chr(reverse_output_index + ord('A'))
+
+        # # # right wheel
+        reverse_input_index = ord(
+            input) - ord('A') + SETTINGS["WHEEL_POS"][2] - SETTINGS["WHEEL_POS"][1]
+        if (reverse_input_index < 0):
+            reverse_input_index += 26
+        else:
+            reverse_input_index %= 26
+
+        reverse_output_index = SETTINGS["WHEELS"][2]["wire"].find(
+            chr(reverse_input_index + ord('A')))
+
+        input = chr(reverse_output_index + ord('A'))
+
+        # # # ETW section
         roter_I_index = ord(input) - ord('A') - SETTINGS["WHEEL_POS"][2]
 
         if (roter_I_index < 0):
@@ -153,35 +177,30 @@ def pass_wheels(input, reverse=False):
 
 
 def pass_ukw(input):
-    return SETTINGS["UKW"][ord(input) - ord('A')]
+    index = ord(input) - ord('A') - SETTINGS["WHEEL_POS"][0]
+    if index < 0:
+        index += 26
+    return SETTINGS["UKW"][index]
 
 # Wheel Rotation
 
 
 def rotate_wheels():
+
     SETTINGS["WHEEL_POS"][2] = (SETTINGS["WHEEL_POS"][2] + 1) % 26
-    SETTINGS["WHEELS"][2]["turn"] -= 1
 
-    if SETTINGS["WHEELS"][2]["turn"] == 0:
-        SETTINGS["WHEELS"][2]["turn"] = 26
+    if SETTINGS["WHEELS"][2]["turn"] + 1 == SETTINGS["WHEEL_POS"][2]:
+        SETTINGS["WHEEL_POS"][1] = (SETTINGS["WHEEL_POS"][1] + 1) % 26
 
-        SETTINGS["WHEEL_POS"][1] += 1
-        SETTINGS["WHEELS"][1]["turn"] -= 1
-
-        if SETTINGS["WHEELS"][1]["turn"] == 0:
-            SETTINGS["WHEELS"][1]["turn"] = 26
-
-            SETTINGS["WHEEL_POS"][0] += 1
-            SETTINGS["WHEELS"][0]["turn"] -= 1
-
-            SETTINGS["WHEELS"][0]["turn"] %= 26
+        if SETTINGS["WHEELS"][1]["turn"] + 1 == SETTINGS["WHEEL_POS"][1]:
+            SETTINGS["WHEEL_POS"][0] = (SETTINGS["WHEEL_POS"][0] + 1) % 26
 
     # Implement Wheel Rotation Logics
     pass
 
 
 # Enigma Exec Start
-plaintext = input("Plaintext to Encode: ")
+# plaintext = input("Plaintext to Encode: ")
 # ukw_select = input("Set Reflector (A, B, C): ")
 # wheel_select = input("Set Wheel Sequence L->R (I, II, III): ")
 # wheel_pos_select = input("Set Wheel Position L->R (A~Z): ")
@@ -189,6 +208,8 @@ plaintext = input("Plaintext to Encode: ")
 
 # apply_settings(ukw_select, wheel_select, wheel_pos_select, plugboard_setup)
 
+plaintext = "LUNCHTODAYISSANDWICH"
+print("plaintext: ", plaintext)
 for ch in plaintext:
     rotate_wheels()
 
