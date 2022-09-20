@@ -116,21 +116,23 @@ def pass_wheels(input, reverse=False):
         input = SETTINGS["WHEELS"][0]["wire"][input_num +
                                               SETTINGS["WHEEL_POS"][0]]
     else:
-        input_num = SETTINGS["WHEELS"][0]["wire"].find(
-            input) + SETTINGS["WHEEL_POS"][1]
-        input = chr(input_num + ord('A'))
+        # wheel section
+        for index in range(3):
+            reverse_input_index = (
+                ord(input) - ord('A') + SETTINGS["WHEEL_POS"][index]) % 26
 
-        input_num = SETTINGS["WHEELS"][1]["wire"].find(
-            input) + SETTINGS["WHEEL_POS"][2]
-        input = chr(input_num + ord('A'))
+            reverse_output_index = SETTINGS["WHEELS"][index]["wire"].find(
+                chr(reverse_input_index + ord('A')))
 
-        input_num = SETTINGS["WHEELS"][2]["wire"].find(
-            input) - SETTINGS["WHEEL_POS"][2]
+            input = chr(reverse_output_index + ord('A'))
 
-        if (input_num < 0):
-            input_num += 26
+        # ETW section
+        roter_I_index = ord(input) - ord('A') - SETTINGS["WHEEL_POS"][2]
 
-        input = chr(input_num + ord('A'))
+        if (roter_I_index < 0):
+            roter_I_index = 26 + roter_I_index
+
+        input = chr(roter_I_index + ord('A'))
 
     return input
 
