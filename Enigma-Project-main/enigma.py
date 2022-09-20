@@ -1,19 +1,19 @@
 # Enigma Template Code for CNU Information Security 2022
 # Resources from https://www.cryptomuseum.com/crypto/enigma
 
-# This Enigma code implements Enigma I, which is utilized by 
-# Wehrmacht and Luftwaffe, Nazi Germany. 
+# This Enigma code implements Enigma I, which is utilized by
+# Wehrmacht and Luftwaffe, Nazi Germany.
 # This version of Enigma does not contain wheel settings, skipped for
 # adjusting difficulty of the assignment.
 
 from copy import deepcopy
 from ctypes import ArgumentError
 
-# Enigma Components
+# Enigma Components, alpabat
 ETW = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 
 WHEELS = {
-    "I" : {
+    "I": {
         "wire": "EKMFLGDQVZNTOWYHXUSPAIBRCJ",
         "turn": 16
     },
@@ -27,6 +27,7 @@ WHEELS = {
     }
 }
 
+# reflactor
 UKW = {
     "A": "EJMZALYXVBWFCRQUONTSPIKHGD",
     "B": "YRUHQSLDPXNGOKMIEBFZCWVJAT",
@@ -34,13 +35,22 @@ UKW = {
 }
 
 # Enigma Settings
+# SETTINGS = {
+#     "UKW": None,
+#     "WHEELS": [],
+#     "WHEEL_POS": [],
+#     "ETW": ETW,
+#     "PLUGBOARD": []
+# }
+
 SETTINGS = {
-    "UKW": None,
-    "WHEELS": [],
-    "WHEEL_POS": [],
+    "UKW": UKW["B"],
+    "WHEELS": [WHEELS["III"], WHEELS["II"], WHEELS["I"]],
+    "WHEEL_POS": [0, 0, 0],
     "ETW": ETW,
     "PLUGBOARD": []
 }
+
 
 def apply_settings(ukw, wheel, wheel_pos, plugboard):
     if not ukw in UKW:
@@ -58,16 +68,19 @@ def apply_settings(ukw, wheel, wheel_pos, plugboard):
         if not wp in ETW:
             raise ArgumentError(f"WHEEL position must be in A-Z!")
         SETTINGS["WHEEL_POS"].append(ord(wp) - ord('A'))
-    
+
     plugboard_setup = plugboard.split(' ')
     for ps in plugboard_setup:
         if not len(ps) == 2 or not ps.isupper():
-            raise ArgumentError(f"Each plugboard setting must be sized in 2 and caplitalized; {ps} is invalid")
+            raise ArgumentError(
+                f"Each plugboard setting must be sized in 2 and caplitalized; {ps} is invalid")
         SETTINGS["PLUGBOARD"].append(ps)
 
 # Enigma Logics Start
 
 # Plugboard
+
+
 def pass_plugboard(input):
     for plug in SETTINGS["PLUGBOARD"]:
         if str.startswith(plug, input):
@@ -78,32 +91,88 @@ def pass_plugboard(input):
     return input
 
 # ETW
+
+
 def pass_etw(input):
     return SETTINGS["ETW"][ord(input) - ord('A')]
 
 # Wheels
-def pass_wheels(input, reverse = False):
+
+
+def pass_wheels(input, reverse=False):
     # Implement Wheel Logics
     # Keep in mind that reflected signals pass wheels in reverse order
+    if (reverse == False):
+        input_num = ord(input) - ord('A')
+        input = SETTINGS["WHEELS"][2]["wire"][input_num +
+                                              SETTINGS["WHEEL_POS"][2]]
+
+        input_num = ord(input) - ord('A') - SETTINGS["WHEEL_POS"][2]
+        input = SETTINGS["WHEELS"][1]["wire"][input_num +
+                                              SETTINGS["WHEEL_POS"][1]]
+
+        input_num = ord(input) - ord('A') - SETTINGS["WHEEL_POS"][1]
+
+        input = SETTINGS["WHEELS"][0]["wire"][input_num +
+                                              SETTINGS["WHEEL_POS"][0]]
+    else:
+        input_num = SETTINGS["WHEELS"][0]["wire"].find(
+            input) + SETTINGS["WHEEL_POS"][1]
+        input = chr(input_num + ord('A'))
+
+        input_num = SETTINGS["WHEELS"][1]["wire"].find(
+            input) + SETTINGS["WHEEL_POS"][2]
+        input = chr(input_num + ord('A'))
+
+        input_num = SETTINGS["WHEELS"][2]["wire"].find(
+            input) - SETTINGS["WHEEL_POS"][2]
+
+        if (input_num < 0):
+            input_num += 26
+
+        input = chr(input_num + ord('A'))
+
     return input
 
 # UKW
+
+
 def pass_ukw(input):
     return SETTINGS["UKW"][ord(input) - ord('A')]
 
 # Wheel Rotation
+
+
 def rotate_wheels():
+    SETTINGS["WHEEL_POS"][2] = (SETTINGS["WHEEL_POS"][2] + 1) % 26
+    SETTINGS["WHEELS"][2]["turn"] -= 1
+
+    if SETTINGS["WHEELS"][2]["turn"] == 0:
+        SETTINGS["WHEELS"][2]["turn"] = 26
+
+        SETTINGS["WHEEL_POS"][1] += 1
+        SETTINGS["WHEELS"][1]["turn"] -= 1
+
+        if SETTINGS["WHEELS"][1]["turn"] == 0:
+            SETTINGS["WHEELS"][1]["turn"] = 26
+
+            SETTINGS["WHEEL_POS"][0] += 1
+            SETTINGS["WHEELS"][0]["turn"] -= 1
+
+            SETTINGS["WHEELS"][0]["turn"] %= 26
+
     # Implement Wheel Rotation Logics
     pass
 
+
 # Enigma Exec Start
 plaintext = input("Plaintext to Encode: ")
-ukw_select = input("Set Reflector (A, B, C): ")
-wheel_select = input("Set Wheel Sequence L->R (I, II, III): ")
-wheel_pos_select = input("Set Wheel Position L->R (A~Z): ")
-plugboard_setup = input("Plugboard Setup: ")
+# ukw_select = input("Set Reflector (A, B, C): ")
+# wheel_select = input("Set Wheel Sequence L->R (I, II, III): ")
+# wheel_pos_select = input("Set Wheel Position L->R (A~Z): ")
+# plugboard_setup = input("Plugboard Setup: ")
 
-apply_settings(ukw_select, wheel_select, wheel_pos_select, plugboard_setup)
+# apply_settings(ukw_select, wheel_select, wheel_pos_select, plugboard_setup)
 
 for ch in plaintext:
     rotate_wheels()
@@ -114,7 +183,7 @@ for ch in plaintext:
     encoded_ch = pass_etw(encoded_ch)
     encoded_ch = pass_wheels(encoded_ch)
     encoded_ch = pass_ukw(encoded_ch)
-    encoded_ch = pass_wheels(encoded_ch, reverse = True)
-    encoded_ch = pass_plugboard(encoded_ch)
+    encoded_ch = pass_wheels(encoded_ch, reverse=True)
+    # encoded_ch = pass_plugboard(encoded_ch)
 
     print(encoded_ch, end='')
