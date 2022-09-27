@@ -6,6 +6,7 @@
 
 from ctypes import ArgumentError
 import re
+from telnetlib import ENCRYPT
 from bitarray import bitarray, util as ba_util
 
 # Initial Permutation (IP)
@@ -118,9 +119,68 @@ mode determines that this function do encryption or decryption.
 '''
 def sdes(text: bitarray, key: bitarray, mode) -> bitarray:
     result = bitarray()
-    
-    # Place your own implementation of S-DES Here
-    
+
+    round_key_list = schedule_keys(key)
+
+    if mode == MODE_ENCRYPT:
+
+        # Initial Permutation
+        applied_IP = bitarray()
+        for i in IP:
+            applied_IP.append(text[i])
+        
+        # First split
+        applied_IP_left = applied_IP[0:4]
+        applied_IP_right = applied_IP[4:8]
+
+        # execution round 1 -> as r1
+        applied_round1 = round(applied_IP_right, round_key_list[0])
+
+        # XOR with Left Half and r1
+        applied_IP_left ^= applied_round1
+
+        # execution round 2 -> as r2
+        applied_round2 = round(applied_IP_left, round_key_list[1])
+
+        # XOR with Right Half and r2
+        applied_IP_right ^= applied_round2
+        
+        # merge both sides
+        merge_side = applied_IP_right + applied_IP_left
+
+        # Final Permutation
+        for i in IP_1:
+            result.append(merge_side[i])
+
+    elif mode == MODE_DECRYPT:
+        # Initial Permutation
+        applied_IP = bitarray()
+        for i in IP:
+            applied_IP.append(text[i])
+        
+        # First split
+        applied_IP_left = applied_IP[0:4]
+        applied_IP_right = applied_IP[4:8]
+
+        # execution round 1 -> as r1
+        applied_round1 = round(applied_IP_right, round_key_list[1])
+
+        # XOR with Left Half and r1
+        applied_IP_left ^= applied_round1
+
+        # execution round 2 -> as r2
+        applied_round2 = round(applied_IP_left, round_key_list[0])
+
+        # XOR with Right Half and r2
+        applied_IP_right ^= applied_round2
+        
+        # merge both sides
+        merge_side = applied_IP_right + applied_IP_left
+
+        # Final Permutation
+        for i in IP_1:
+            result.append(merge_side[i])    
+            
     return result
 
 #### DES Sample Program Start
