@@ -14,15 +14,20 @@ class Receiver(Thread):
         self.socket = socket
 
     def decrypt(self, ciphertext:bytes) -> bytes:
+        cipher = AES.new(ENCRYPTION_KEY, AES.MODE_ECB)
+
+        plaintext = cipher.decrypt(ciphertext)
+
+        applied_unpad_text = unpad(plaintext, BLOCK_SIZE)
         # place your own implementation of
         # AES-128-ECB decryption with pycryptodome
 
-        return b''
+        return applied_unpad_text
 
     def handle_recv(self, received:bytes):
         try:
             decrypt_result = self.decrypt(received)
-            print("Received: " + bytes.decode(decrypt_result, "UTF-8"))
+            print("\nReceived: " + bytes.decode(decrypt_result, "UTF-8"))
         except:
             pass
 
@@ -32,10 +37,18 @@ class Receiver(Thread):
             self.handle_recv(received)
 
 def encrypt_message(msg: bytes) -> bytes:
+    cipher = AES.new(ENCRYPTION_KEY, AES.MODE_ECB)
+
+    # apply padding
+    applied_padding_text = pad(msg, BLOCK_SIZE)
+
+    # encryption
+    ciphertext = cipher.encrypt(applied_padding_text)
+
     # place your own implementation of
     # AES-128-ECB encryption with pycryptodome
 
-    return b''
+    return ciphertext
 
 client_socket = socket(AddressFamily.AF_INET, SocketKind.SOCK_STREAM)
 client_socket.connect(('127.0.0.1', 24000))
@@ -56,5 +69,5 @@ while True:
 
     payload = encrypt_message(msg_encoded)
     client_socket.send(payload)
-    
+
     print("Me: " + msg)
