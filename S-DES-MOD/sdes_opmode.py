@@ -151,21 +151,26 @@ def sdes_encrypt_ecb(text: bitarray, key: bitarray):
     result = bitarray()
     result_len = 0
 
-    while result_len != text.__len__:
-        result.append(sdes(text[result_len: result_len+8], key, MODE_ENCRYPT))
-        
-        result_len += 8
+    while result_len < text.__len__():
+        result_split = sdes(text[result_len: result_len+8], key, MODE_ENCRYPT)
+        result += result_split 
 
-    print(result)
+        result_len += 8
 
     return result
 
 
 def sdes_decrypt_ecb(ciphertext: bitarray, key: bitarray):
     result = bitarray()
+    result_len = 0
 
+    while result_len < ciphertext.__len__():
+        result_split = sdes(ciphertext[result_len: result_len+8], key, MODE_DECRYPT)
+        result += result_split 
 
-    pass
+        result_len += 8
+
+    return result
 
 def sdes_encrypt_cbc(text: bitarray, key: bitarray, iv:bitarray):
     pass
