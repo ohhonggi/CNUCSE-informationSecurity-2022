@@ -148,9 +148,23 @@ def sdes(text: bitarray, key: bitarray, mode) -> bitarray:
 
 
 def sdes_encrypt_ecb(text: bitarray, key: bitarray):
-    pass
+    result = bitarray()
+    result_len = 0
+
+    while result_len != text.__len__:
+        result.append(sdes(text[result_len: result_len+8], key, MODE_ENCRYPT))
+        
+        result_len += 8
+
+    print(result)
+
+    return result
+
 
 def sdes_decrypt_ecb(ciphertext: bitarray, key: bitarray):
+    result = bitarray()
+
+
     pass
 
 def sdes_encrypt_cbc(text: bitarray, key: bitarray, iv:bitarray):
@@ -161,17 +175,20 @@ def sdes_decrypt_cbc(ciphertext: bitarray, key: bitarray, iv:bitarray):
 
 #### DES Sample Program Start
 
-plaintext = input("[*] Input Plaintext in Binary: ")
-key = input("[*] Input Key in Binary (10bits): ")
+# plaintext = input("[*] Input Plaintext in Binary: ")
+# key = input("[*] Input Key in Binary (10bits): ")
 
-print(len(plaintext))
+# print(len(plaintext))
 
-# Plaintext must be multiple of 8 and Key must be 10 bits.
-if len(plaintext) % 8 != 0 or len(key) != 10:
-    raise ArgumentError("Input Length Error!!!")
+# # Plaintext must be multiple of 8 and Key must be 10 bits.
+# if len(plaintext) % 8 != 0 or len(key) != 10:
+#     raise ArgumentError("Input Length Error!!!")
 
-if re.search("[^01]", plaintext) or re.search("[^01]", key):
-    raise ArgumentError("Inputs must be in binary!!!")
+# if re.search("[^01]", plaintext) or re.search("[^01]", key):
+#     raise ArgumentError("Inputs must be in binary!!!")
+
+plaintext = "1000100010001000"
+key = "1010101010"
 
 bits_plaintext = bitarray(plaintext)
 bits_key = bitarray(key)
