@@ -173,54 +173,64 @@ def sdes_decrypt_ecb(ciphertext: bitarray, key: bitarray):
     return result
 
 def sdes_encrypt_cbc(text: bitarray, key: bitarray, iv:bitarray):
-    result = text[0: 8]
-    # applied_initial_vector = iv
+    result = bitarray()
+    applied_initial_vector = iv
 
-    # result_len = 0
+    result_len = 0
 
-    # while result_len < text.__len__():
-    #     text_split = text[result_len: result_len+8]
-    #     applied_initial_vector = text_split ^ applied_initial_vector
+    while result_len < text.__len__():
+        text_split = text[result_len: result_len+8]
+
+        applied_initial_vector = text_split ^ applied_initial_vector
         
-    #     result_split = sdes(applied_initial_vector, key, MODE_ENCRYPT)
-    #     result += result_split
+        result_split = sdes(applied_initial_vector, key, MODE_ENCRYPT)
 
-    #     result_len += 8
+        result += result_split
+        applied_initial_vector = result_split
+
+        result_len += 8
 
     return result
 
 def sdes_decrypt_cbc(ciphertext: bitarray, key: bitarray, iv:bitarray):
     result = bitarray()
 
-    # result_len = 0
+    # 1. split ciphertext
+    ciphertext_split = ciphertext[0:8]
+    # 2. apply S-DES
+    applied_sdes = sdes(ciphertext_split, key, MODE_DECRYPT)
 
-    # while result_len < ciphertext.__len__():
-    #     ciphertext_split = ciphertext[result_len: result_len+8]
-    #     applied_initial_vector = ciphertext_split ^ iv
+    # 3. Xor IV & applied_sdes
+    result += (applied_sdes ^ iv)
+    result_len = 8
+    
+    # Repetition 1~3
+    while result_len < ciphertext.__len__():
+        ciphertext_split = ciphertext[result_len: result_len+8]
+
+        applied_sdes = sdes(ciphertext_split, key, MODE_DECRYPT)
+
+        ciphertext_split_before_block = ciphertext[result_len-8: result_len]
+
+        result += (applied_sdes ^ ciphertext_split_before_block)
         
-    #     result_split = sdes(applied_initial_vector, key, MODE_DECRYPT)
-    #     result += result_split 
-
-    #     result_len += 8
+        result_len += 8
     
     return result
 
 #### DES Sample Program Start
 
-# plaintext = input("[*] Input Plaintext in Binary: ")
-# key = input("[*] Input Key in Binary (10bits): ")
+plaintext = input("[*] Input Plaintext in Binary: ")
+key = input("[*] Input Key in Binary (10bits): ")
 
-# print(len(plaintext))
+print(len(plaintext))
 
-# # Plaintext must be multiple of 8 and Key must be 10 bits.
-# if len(plaintext) % 8 != 0 or len(key) != 10:
-#     raise ArgumentError("Input Length Error!!!")
+# Plaintext must be multiple of 8 and Key must be 10 bits.
+if len(plaintext) % 8 != 0 or len(key) != 10:
+    raise ArgumentError("Input Length Error!!!")
 
-# if re.search("[^01]", plaintext) or re.search("[^01]", key):
-#     raise ArgumentError("Inputs must be in binary!!!")
-
-plaintext = "1000100010001000"
-key = "1010101010"
+if re.search("[^01]", plaintext) or re.search("[^01]", key):
+    raise ArgumentError("Inputs must be in binary!!!")
 
 bits_plaintext = bitarray(plaintext)
 bits_key = bitarray(key)
@@ -243,6 +253,9 @@ else:
 
 # now IV will be always 8 bits
 random_iv = bitarray(bin(random.getrandbits(7) + (1 << 8)).replace('0b', ''))
+# Prevent overflow of 8bits
+random_iv = random_iv[0:8]
+
 print(f"IV will be random...{random_iv}")
 
 result_encrypt = sdes_encrypt_cbc(bits_plaintext, bits_key, random_iv)
