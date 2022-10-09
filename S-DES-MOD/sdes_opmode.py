@@ -173,10 +173,37 @@ def sdes_decrypt_ecb(ciphertext: bitarray, key: bitarray):
     return result
 
 def sdes_encrypt_cbc(text: bitarray, key: bitarray, iv:bitarray):
-    pass
+    result = text[0: 8]
+    # applied_initial_vector = iv
+
+    # result_len = 0
+
+    # while result_len < text.__len__():
+    #     text_split = text[result_len: result_len+8]
+    #     applied_initial_vector = text_split ^ applied_initial_vector
+        
+    #     result_split = sdes(applied_initial_vector, key, MODE_ENCRYPT)
+    #     result += result_split
+
+    #     result_len += 8
+
+    return result
 
 def sdes_decrypt_cbc(ciphertext: bitarray, key: bitarray, iv:bitarray):
-    pass
+    result = bitarray()
+
+    # result_len = 0
+
+    # while result_len < ciphertext.__len__():
+    #     ciphertext_split = ciphertext[result_len: result_len+8]
+    #     applied_initial_vector = ciphertext_split ^ iv
+        
+    #     result_split = sdes(applied_initial_vector, key, MODE_DECRYPT)
+    #     result += result_split 
+
+    #     result_len += 8
+    
+    return result
 
 #### DES Sample Program Start
 
@@ -214,7 +241,8 @@ if result_decrypt != bits_plaintext:
 else:
     print(f"S-DES-ECB SUCCESS!!!")
 
-random_iv = bitarray(bin(random.getrandbits(8)).replace('0b', ''))
+# now IV will be always 8 bits
+random_iv = bitarray(bin(random.getrandbits(7) + (1 << 8)).replace('0b', ''))
 print(f"IV will be random...{random_iv}")
 
 result_encrypt = sdes_encrypt_cbc(bits_plaintext, bits_key, random_iv)
