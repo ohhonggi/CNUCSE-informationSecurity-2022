@@ -223,8 +223,6 @@ def sdes_decrypt_cbc(ciphertext: bitarray, key: bitarray, iv:bitarray):
 plaintext = input("[*] Input Plaintext in Binary: ")
 key = input("[*] Input Key in Binary (10bits): ")
 
-print(len(plaintext))
-
 # Plaintext must be multiple of 8 and Key must be 10 bits.
 if len(plaintext) % 8 != 0 or len(key) != 10:
     raise ArgumentError("Input Length Error!!!")
